@@ -1,0 +1,20 @@
+group = project.group
+version = project.version
+
+dependencies {
+    compileOnly project(":bluefox")
+}
+
+tasks.register('copyResources', Copy) {
+
+    def dest = file('../test/server/world/datapacks')
+
+    doFirst {
+        if (dest.exists()) {
+            dest.deleteDir()
+        }
+    }
+
+    from 'src/main/resources/datapacks'
+    into dest
+}
