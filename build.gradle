@@ -3,18 +3,9 @@ version = project.version
 
 dependencies {
     compileOnly project(":bluefox")
-}
 
-tasks.register('copyResources', Copy) {
-
-    def dest = file('../test/server/world/datapacks')
-
-    doFirst {
-        if (dest.exists()) {
-            dest.deleteDir()
-        }
+    // Discord4J but without opus-java and also use the latest version of okhttp3 pls ty
+    implementation('net.dv8tion:JDA:6.0.0') {
+        exclude module: 'opus-java'
     }
-
-    from 'src/main/resources/datapacks'
-    into dest
 }
