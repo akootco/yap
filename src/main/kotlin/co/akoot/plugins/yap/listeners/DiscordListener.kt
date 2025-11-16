@@ -1,12 +1,14 @@
-package co.akoot.plugins.yap.events
+package co.akoot.plugins.yap.listeners
 
-import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.yap.Yap
 import co.akoot.plugins.yap.extensions.asEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.audit.ActionType
-import net.dv8tion.jda.api.events.guild.GuildBanEvent
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.events.channel.ChannelCreateEvent
+import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
+import net.dv8tion.jda.api.events.session.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.awt.Color
 import java.time.Duration
@@ -14,6 +16,7 @@ import java.time.Instant
 
 class DiscordListener: ListenerAdapter() {
     private val auditLookBack = Duration.ofSeconds(10)
+
     override fun onGuildMemberRemove(event: GuildMemberRemoveEvent) {
         val user = event.user
         event.guild.retrieveAuditLogs()
@@ -57,6 +60,17 @@ class DiscordListener: ListenerAdapter() {
             }
     }
 
-    override fun onGuildBan(event: GuildBanEvent) {
+    override fun onReady(event: ReadyEvent) {
+        // TODO: Server Started message
+    }
+
+    override fun onChannelCreate(event: ChannelCreateEvent) {
+        if(event.channelType != ChannelType.TEXT) return
+        Yap.channels += event.channel.name to event.channel.asTextChannel()
+    }
+
+    override fun onChannelDelete(event: ChannelDeleteEvent) {
+        if(event.channelType != ChannelType.TEXT) return
+        Yap.channels -= event.channel.name
     }
 }

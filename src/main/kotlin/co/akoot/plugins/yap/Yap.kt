@@ -4,7 +4,8 @@ import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.util.async
-import co.akoot.plugins.yap.events.DiscordListener
+import co.akoot.plugins.yap.listeners.ChatListener
+import co.akoot.plugins.yap.listeners.DiscordListener
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Guild
@@ -65,7 +66,6 @@ class Yap : FoxPlugin("yap") {
             guild?.textChannels?.forEach {
                 channels += it.name to it
             }
-            println("channels: $channels")
         }
         jda?.addEventListener(DiscordListener())
     }
@@ -77,5 +77,6 @@ class Yap : FoxPlugin("yap") {
     }
 
     override fun registerEvents() {
+        registerEventListener(ChatListener(this))
     }
 }
