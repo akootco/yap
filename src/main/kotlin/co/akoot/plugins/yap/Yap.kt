@@ -3,6 +3,9 @@ package co.akoot.plugins.yap
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.util.async
+import co.akoot.plugins.yap.commands.ChatThemeCommand
+import co.akoot.plugins.yap.commands.NickCommand
+import co.akoot.plugins.yap.commands.PrintCommand
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
 import net.dv8tion.jda.api.JDA
@@ -32,6 +35,13 @@ class Yap : FoxPlugin("yap") {
             val channel = channels[channel] ?: return
             channel.sendMessageEmbeds(embed, *other).queue()
         }
+
+    }
+
+    val chatThemes = registerConfig("themes")
+    val defaultChatFormat = "{bracketColor}[{title}{bracketColor}] [{nick}]({name}) "
+    fun getChatThemeFormat(name: String): String? {
+        return chatThemes.getString(name)
     }
 
     private fun getJDA(): JDA? {
@@ -77,5 +87,11 @@ class Yap : FoxPlugin("yap") {
 
     override fun registerEvents() {
         registerEventListener(ChatListener(this))
+    }
+
+    override fun registerCommands() {
+        registerCommand(PrintCommand(this))
+        registerCommand(ChatThemeCommand(this))
+        registerCommand(NickCommand(this))
     }
 }
