@@ -1,6 +1,5 @@
 package co.akoot.plugins.yap
 
-import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.util.async

@@ -2,11 +2,10 @@ package co.akoot.plugins.yap.listeners
 
 import co.akoot.plugins.bluefox.extensions.getPDC
 import co.akoot.plugins.bluefox.extensions.getPDCList
-import co.akoot.plugins.bluefox.util.Text
+import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.util.Text.Companion.plus
 import co.akoot.plugins.bluefox.util.parse
 import co.akoot.plugins.yap.Yap
-import co.akoot.plugins.yap.extensions.isMuting
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
@@ -26,7 +25,7 @@ class ChatListener(private val plugin: Yap): Listener, ChatRenderer {
         event.message(message.parse())
         for(viewer in event.viewers()) {
             val player = viewer as? Player ?: break
-            if(player.isMuting(sender)) {
+            if(player.profile.isIgnoring(sender)) {
                 event.viewers().remove(player)
             }
         }
