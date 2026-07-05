@@ -7,12 +7,11 @@ import co.akoot.plugins.bluefox.util.getColor
 import co.akoot.plugins.bluefox.util.or
 import co.akoot.plugins.bluefox.util.sendWarning
 import co.akoot.plugins.yap.Yap
-import net.kyori.adventure.text.format.TextColor
 import org.bukkit.OfflinePlayer
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
+class ChatThemeCommand(plugin: Yap) : CatCommand(plugin, "chattheme") {
     init {
         noargs {
             permissionCheck(it) ?: return@noargs false
@@ -25,11 +24,13 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
                 val player = getPlayerSender(it) ?: return@subcommand false
                 sendTheme(player, player)
             } then {
-                string("format", suggestions = { _, builder -> suggest(builder, plugin.chatThemes.getKeys().toMutableList()) }) {
+                string(
+                    "format",
+                    suggestions = { _, builder -> suggest(builder, plugin.chatThemes.getKeys().toMutableList()) }) {
                     permissionCheck(it, "set") ?: return@string false
                     val player = getPlayerSender(it) ?: return@string false
                     val themeName = getString(it, "format")
-                    if(themeName == "default") {
+                    if (themeName == "default") {
                         player.profile.chatFormat = ""
                     } else {
                         val format = plugin.getChatThemeFormat(themeName) ?: return@string false
@@ -41,7 +42,7 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
                         permissionCheck(it, "set.global") ?: return@subcommand false
                         val player = getPlayerSender(it) ?: return@subcommand false
                         val themeName = getString(it, "format")
-                        if(themeName == "default") {
+                        if (themeName == "default") {
                             player.profile.universalChatFormat = ""
                         } else {
                             val format = plugin.getChatThemeFormat(themeName) ?: return@subcommand false
@@ -62,7 +63,7 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
                     permissionCheck(it, "set") ?: return@string false
                     val player = getPlayerSender(it) ?: return@string false
                     val tint = getString(it, "tint")
-                    if(tint != "none") {
+                    if (tint != "none") {
                         getColor(tint) ?: return@string player.sendWarning("Invalid color!")
                         player.profile.chatTint = tint
                     } else {
@@ -74,7 +75,7 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
                         permissionCheck(it, "set.global") ?: return@subcommand false
                         val player = getPlayerSender(it) ?: return@subcommand false
                         val tint = getString(it, "tint")
-                        if(tint != "none") {
+                        if (tint != "none") {
                             getColor(tint) ?: return@subcommand player.sendWarning("Invalid color!")
                             player.profile.universalChatTint = tint
                         } else {
@@ -125,7 +126,7 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
     fun sendTheme(sender: CommandSender, player: OfflinePlayer): Boolean {
         val format = player.profile.chatFormat or Yap.instance.defaultChatFormat
         val tint = getColor(player.profile.chatTint)
-        val theme = if(sender is Player) {
+        val theme = if (sender is Player) {
             player.profile.parseTheme(
                 format = format,
                 tint = tint,

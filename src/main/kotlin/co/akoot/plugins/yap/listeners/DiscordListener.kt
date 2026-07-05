@@ -14,7 +14,7 @@ import java.awt.Color
 import java.time.Duration
 import java.time.Instant
 
-class DiscordListener: ListenerAdapter() {
+class DiscordListener : ListenerAdapter() {
     private val auditLookBack = Duration.ofSeconds(10)
 
     override fun onGuildMemberRemove(event: GuildMemberRemoveEvent) {
@@ -32,7 +32,11 @@ class DiscordListener: ListenerAdapter() {
                 val embed = when (entry?.type) {
                     ActionType.KICK -> {
                         EmbedBuilder().apply {
-                            setAuthor("Good riddance, ${user.effectiveName} was kicked!", null, moderator?.effectiveAvatarUrl)
+                            setAuthor(
+                                "Good riddance, ${user.effectiveName} was kicked!",
+                                null,
+                                moderator?.effectiveAvatarUrl
+                            )
                             setImage(user.effectiveAvatarUrl)
                             setDescription("Thank you ${moderator?.effectiveName ?: "Anonymous"}, I sure hope @${user.name} learns their lesson!")
                             setFooter(entry.reason?.let { "\"$it\" - @${moderator?.name ?: "anonymous"}" })
@@ -40,19 +44,29 @@ class DiscordListener: ListenerAdapter() {
                         }.build()
 
                     }
+
                     ActionType.BAN -> {
                         EmbedBuilder().apply {
-                            setAuthor("And stay out! ${user.effectiveName} was BANNED!", null, moderator?.effectiveAvatarUrl)
+                            setAuthor(
+                                "And stay out! ${user.effectiveName} was BANNED!",
+                                null,
+                                moderator?.effectiveAvatarUrl
+                            )
                             setImage(user.effectiveAvatarUrl)
                             setDescription("Thank you ${moderator?.effectiveName ?: "Anonymous"}, may that vagabond @${user.name} find a dumpster to lay in, away from here!")
                             setFooter(entry.reason?.let { "\"$it\" - @${moderator?.name ?: "anonymous"}" })
                             setColor(0xf22602)
                         }.build()
                     }
+
                     else -> {
-                        event.user.asEmbed("This is so sad, ${user.effectiveName} has left us...", "Rest in peace, @${user.name}. *You may be missed...*", smallPic = false, color = Color(
-                            0x487587
-                        )
+                        event.user.asEmbed(
+                            "This is so sad, ${user.effectiveName} has left us...",
+                            "Rest in peace, @${user.name}. *You may be missed...*",
+                            smallPic = false,
+                            color = Color(
+                                0x487587
+                            )
                         )
                     }
                 }
@@ -65,12 +79,12 @@ class DiscordListener: ListenerAdapter() {
     }
 
     override fun onChannelCreate(event: ChannelCreateEvent) {
-        if(event.channelType != ChannelType.TEXT) return
+        if (event.channelType != ChannelType.TEXT) return
         Yap.channels += event.channel.name to event.channel.asTextChannel()
     }
 
     override fun onChannelDelete(event: ChannelDeleteEvent) {
-        if(event.channelType != ChannelType.TEXT) return
+        if (event.channelType != ChannelType.TEXT) return
         Yap.channels -= event.channel.name
     }
 }

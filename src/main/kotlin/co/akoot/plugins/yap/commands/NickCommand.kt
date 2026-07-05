@@ -2,7 +2,6 @@ package co.akoot.plugins.yap.commands
 
 import co.akoot.plugins.bluefox.api.CatCommand
 import co.akoot.plugins.bluefox.extensions.profile
-import co.akoot.plugins.bluefox.extensions.sendMessage
 import co.akoot.plugins.bluefox.extensions.usernamePossessive
 import co.akoot.plugins.bluefox.util.parse
 import co.akoot.plugins.bluefox.util.primary
@@ -10,13 +9,13 @@ import co.akoot.plugins.bluefox.util.sendText
 import co.akoot.plugins.bluefox.util.sendWarning
 import co.akoot.plugins.yap.Yap
 
-class NickCommand(plugin: Yap): CatCommand(plugin, "nick") {
+class NickCommand(plugin: Yap) : CatCommand(plugin, "nick") {
     init {
         noargs {
             permissionCheck(it) ?: return@noargs false
             val player = getPlayerSender(it) ?: return@noargs false
             val nickname = player.profile.nickname
-            if(nickname.isEmpty()) player.sendWarning("You do not have a nickname (yet?)")
+            if (nickname.isEmpty()) player.sendWarning("You do not have a nickname (yet?)")
             else player.sendText("Your nickname is ", nickname.parse())
         }
         then {
@@ -34,7 +33,10 @@ class NickCommand(plugin: Yap): CatCommand(plugin, "nick") {
                 val sender = getSender(it)
                 val player = getOfflinePlayer(it) ?: return@offlinePlayer false
                 val nickname = player.profile.nickname
-                if(nickname.isEmpty()) sender.sendWarning(primary(player.usernamePossessive), " does not have a nickname (yet?)")
+                if (nickname.isEmpty()) sender.sendWarning(
+                    primary(player.usernamePossessive),
+                    " does not have a nickname (yet?)"
+                )
                 else sender.sendText(primary(player.usernamePossessive), " nickname is ", nickname.parse())
             } then {
                 greedyString("nick") {

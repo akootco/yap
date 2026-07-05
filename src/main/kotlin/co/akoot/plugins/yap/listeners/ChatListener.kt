@@ -17,16 +17,16 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 
-class ChatListener(private val plugin: Yap): Listener, ChatRenderer {
+class ChatListener(private val plugin: Yap) : Listener, ChatRenderer {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onAsyncChat(event: AsyncChatEvent) {
         val sender = event.player
         val message = event.signedMessage().message()
         event.message(message.parse())
-        for(viewer in event.viewers()) {
+        for (viewer in event.viewers()) {
             val player = viewer as? Player ?: break
-            if(player.profile.isIgnoring(sender)) {
+            if (player.profile.isIgnoring(sender)) {
                 event.viewers().remove(player)
             }
         }
@@ -39,9 +39,10 @@ class ChatListener(private val plugin: Yap): Listener, ChatRenderer {
         message: Component,
         viewer: Audience
     ): Component {
-        return if(viewer is Player) {
+        return if (viewer is Player) {
             val tint = viewer.profile.universalChatTint or viewer.profile.chatTint or source.profile.chatTint
-            val tintIntensity = viewer.profile.universalChatTintIntensity or viewer.profile.chatTintIntensity or  source.profile.chatTintIntensity
+            val tintIntensity =
+                viewer.profile.universalChatTintIntensity or viewer.profile.chatTintIntensity or source.profile.chatTintIntensity
             val format = viewer.profile.universalChatFormat or viewer.profile.chatFormat or source.profile.chatFormat
             viewer.profile.parseTheme(
                 format = format or plugin.defaultChatFormat,
