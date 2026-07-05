@@ -42,7 +42,7 @@ class ChatThemeCommand(plugin: Yap): CatCommand(plugin, "chattheme") {
                         val player = getPlayerSender(it) ?: return@subcommand false
                         val themeName = getString(it, "format")
                         if(themeName == "default") {
-                            player.profile.chatFormat = ""
+                            player.profile.universalChatFormat = ""
                         } else {
                             val format = plugin.getChatThemeFormat(themeName) ?: return@subcommand false
                             player.profile.universalChatFormat = format

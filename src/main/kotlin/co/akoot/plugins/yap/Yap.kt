@@ -39,9 +39,14 @@ class Yap : FoxPlugin("yap") {
     }
 
     val chatThemes = registerConfig("themes")
+    val titles = registerConfig("titles")
     val defaultChatFormat = "{bracketColor}[{title}{bracketColor}] [{nick}]({name}) "
     fun getChatThemeFormat(name: String): String? {
         return chatThemes.getString(name)
+    }
+
+    fun getTitle(name: String): String? {
+        return titles.getString(name)
     }
 
     private fun getJDA(): JDA? {
