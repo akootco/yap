@@ -43,10 +43,10 @@ class ChatThemeCommand(plugin: Yap) : CatCommand(plugin, "chattheme") {
                         val player = getPlayerSender(it) ?: return@subcommand false
                         val themeName = getString(it, "format")
                         if (themeName == "default") {
-                            player.profile.universalChatFormat = ""
+                            player.profile.globalChatFormat = ""
                         } else {
                             val format = plugin.getChatThemeFormat(themeName) ?: return@subcommand false
-                            player.profile.universalChatFormat = format
+                            player.profile.globalChatFormat = format
                         }
                         sendTheme(player, player)
                     }
@@ -77,9 +77,9 @@ class ChatThemeCommand(plugin: Yap) : CatCommand(plugin, "chattheme") {
                         val tint = getString(it, "tint")
                         if (tint != "none") {
                             getColor(tint) ?: return@subcommand player.sendWarning("Invalid color!")
-                            player.profile.universalChatTint = tint
+                            player.profile.globalChatTint = tint
                         } else {
-                            player.profile.universalChatTint = ""
+                            player.profile.globalChatTint = ""
                         }
                         sendTheme(player, player)
                     }
@@ -103,7 +103,7 @@ class ChatThemeCommand(plugin: Yap) : CatCommand(plugin, "chattheme") {
                         permissionCheck(it, "set.global") ?: return@subcommand false
                         val player = getPlayerSender(it) ?: return@subcommand false
                         val tintIntensity = getDouble(it, "tintIntensity")
-                        player.profile.universalChatTintIntensity = tintIntensity
+                        player.profile.globalChatTintIntensity = tintIntensity
                         sendTheme(player, player)
                     }
                 }

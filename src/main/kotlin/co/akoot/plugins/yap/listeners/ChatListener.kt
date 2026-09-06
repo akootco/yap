@@ -40,10 +40,10 @@ class ChatListener(private val plugin: Yap) : Listener, ChatRenderer {
         viewer: Audience
     ): Component {
         return if (viewer is Player) {
-            val tint = viewer.profile.universalChatTint or viewer.profile.chatTint or source.profile.chatTint
+            val tint = viewer.profile.globalChatTint or viewer.profile.chatTint or source.profile.chatTint
             val tintIntensity =
-                viewer.profile.universalChatTintIntensity or viewer.profile.chatTintIntensity or source.profile.chatTintIntensity
-            val format = viewer.profile.universalChatFormat or viewer.profile.chatFormat or source.profile.chatFormat
+                viewer.profile.globalChatTintIntensity or viewer.profile.chatTintIntensity or source.profile.chatTintIntensity
+            val format = viewer.profile.globalChatFormat or viewer.profile.chatFormat or source.profile.chatFormat
             viewer.profile.parseTheme(
                 format = format or plugin.defaultChatFormat,
                 tint = getColor(tint) ?: Color.Month,
