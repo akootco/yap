@@ -3,9 +3,16 @@ package co.akoot.plugins.yap
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.util.async
+import co.akoot.plugins.yap.api.ConsequentialTitle
+import co.akoot.plugins.yap.api.RandomTitle
+import co.akoot.plugins.yap.api.TimedTitle
+import co.akoot.plugins.yap.api.Title
+import co.akoot.plugins.yap.api.TitleRarity
+import co.akoot.plugins.yap.api.TitleType
 import co.akoot.plugins.yap.commands.ChatThemeCommand
 import co.akoot.plugins.yap.commands.NickCommand
 import co.akoot.plugins.yap.commands.PrintCommand
+import co.akoot.plugins.yap.commands.TitleCommand
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
 import net.dv8tion.jda.api.JDA
@@ -21,6 +28,7 @@ class Yap : FoxPlugin("yap") {
 
         lateinit var instance: Yap
         lateinit var auth: FoxConfig
+        lateinit var titles: FoxConfig
 
         var jda: JDA? = null
         var guild: Guild? = null
@@ -39,14 +47,56 @@ class Yap : FoxPlugin("yap") {
     }
 
     val chatThemes = registerConfig("themes")
-    val titles = registerConfig("titles")
+
+    var titles: List<Title> = listOf()
+
+    private fun getTitles(config: FoxConfig, type: TitleType): List<Title> {
+        val titles = mutableListOf<Title>()
+        config.apply {
+            val root = type.name.lowercase()
+            for (titleId in getKeys(root)) {
+                val key = "$root.$titleId"
+                val titleName = getString("$key.name") ?: continue
+                val discordId = getLong("$key.discord") ?: 0
+                val alt = getString("$key.alt")
+                val title = when(type) {
+                    TitleType.CONSEQUENTIAL -> {
+                        ConsequentialTitle(titleId, titleName, discordId, getString("$key.reason") ?: "Unknown", alt)
+                    }
+                    TitleType.TIMED -> {
+                        val playtime = getInt("$key.playtime") ?: continue
+                        val days = getInt("$key.days") ?: continue
+                        TimedTitle(titleId, titleName, discordId, playtime, days, alt)
+                    }
+                    TitleType.RANDOM -> {
+                        val rarity = getEnum<TitleRarity>("$key.rarity") ?: continue
+                        RandomTitle(titleId, titleName, discordId, rarity, alt)
+                    }
+                    else -> Title(titleId, titleName, discordId, alt)
+                }
+                titles.add(title)
+            }
+        }
+        return titles
+    }
+
+    fun getTitle(id: String): Title? {
+        return titles.find { it.id == id }
+    }
+
     val defaultChatFormat = "{bracketColor}[{title}{bracketColor}] [{nick}]({name}) "
     fun getChatThemeFormat(name: String): String? {
         return chatThemes.getString(name)
     }
 
-    fun getTitle(name: String): String? {
-        return titles.getString(name)
+    fun randomTitle(luck: Double = 0.0): Title? {
+        val roll = Math.random() - luck.coerceIn(0.0, 1.0)
+        val rarity =
+            if(roll <= 0.05) TitleRarity.LEGENDARY
+            else if(roll <= 0.10) TitleRarity.RARE
+            else if(roll <= 0.25) TitleRarity.UNCOMMON
+            else TitleRarity.COMMON
+        return titles.filter { it is RandomTitle && it.rarity == rarity }.randomOrNull()
     }
 
     private fun getJDA(): JDA? {
@@ -68,6 +118,14 @@ class Yap : FoxPlugin("yap") {
 
     override fun registerConfigs() {
         auth = registerConfig("auth")
+        Yap.titles = registerConfig("titles") { config ->
+            val allTitles = mutableListOf<Title>()
+            TitleType.entries.forEach { type ->
+                allTitles.addAll(getTitles(config, type))
+            }
+            titles = allTitles
+            logger.info("Loaded ${titles.size} titles.")
+        }
     }
 
     override fun load() {
@@ -82,6 +140,7 @@ class Yap : FoxPlugin("yap") {
             }
         }
         jda?.addEventListener(DiscordListener())
+        Yap.titles.load()
     }
 
     override fun unload() {
@@ -98,5 +157,6 @@ class Yap : FoxPlugin("yap") {
         registerCommand(PrintCommand(this))
         registerCommand(ChatThemeCommand(this))
         registerCommand(NickCommand(this))
+        //registerCommand(TitleCommand)
     }
 }
