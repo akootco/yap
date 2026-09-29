@@ -77,6 +77,7 @@ class Yap : FoxPlugin("yap") {
                 titles.add(title)
             }
         }
+        logger.info("Loaded ${titles.size} titles.")
         return titles
     }
 
@@ -140,7 +141,6 @@ class Yap : FoxPlugin("yap") {
             }
         }
         jda?.addEventListener(DiscordListener())
-        Yap.titles.load()
     }
 
     override fun unload() {
@@ -157,6 +157,6 @@ class Yap : FoxPlugin("yap") {
         registerCommand(PrintCommand(this))
         registerCommand(ChatThemeCommand(this))
         registerCommand(NickCommand(this))
-        //registerCommand(TitleCommand)
+        registerCommand(TitleCommand)
     }
 }
