@@ -2,8 +2,10 @@ package co.akoot.plugins.yap
 
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
+import co.akoot.plugins.bluefox.extensions.touch
 import co.akoot.plugins.bluefox.util.async
 import co.akoot.plugins.yap.api.ConsequentialTitle
+import co.akoot.plugins.yap.api.History
 import co.akoot.plugins.yap.api.RandomTitle
 import co.akoot.plugins.yap.api.TimedTitle
 import co.akoot.plugins.yap.api.Title
@@ -12,6 +14,7 @@ import co.akoot.plugins.yap.api.TitleType
 import co.akoot.plugins.yap.commands.ChatThemeCommand
 import co.akoot.plugins.yap.commands.NickCommand
 import co.akoot.plugins.yap.commands.PrintCommand
+import co.akoot.plugins.yap.commands.RegardingCommand
 import co.akoot.plugins.yap.commands.TitleCommand
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
@@ -29,6 +32,8 @@ class Yap : FoxPlugin("yap") {
         lateinit var instance: Yap
         lateinit var auth: FoxConfig
         lateinit var titles: FoxConfig
+
+        lateinit var history: History
 
         var jda: JDA? = null
         var guild: Guild? = null
@@ -141,6 +146,7 @@ class Yap : FoxPlugin("yap") {
             }
         }
         jda?.addEventListener(DiscordListener())
+        history = History(dataFolder.resolve("history.txt").touch())
     }
 
     override fun unload() {
@@ -158,5 +164,6 @@ class Yap : FoxPlugin("yap") {
         registerCommand(ChatThemeCommand(this))
         registerCommand(NickCommand(this))
         registerCommand(TitleCommand)
+        registerCommand(RegardingCommand)
     }
 }

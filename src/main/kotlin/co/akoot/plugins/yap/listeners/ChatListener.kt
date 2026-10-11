@@ -5,9 +5,13 @@ import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.util.Color
 import co.akoot.plugins.bluefox.util.Text.Companion.plus
 import co.akoot.plugins.bluefox.util.getColor
+import co.akoot.plugins.bluefox.util.hover
 import co.akoot.plugins.bluefox.util.or
 import co.akoot.plugins.bluefox.util.parse
+import co.akoot.plugins.bluefox.util.stripColor
+import co.akoot.plugins.bluefox.util.suggest
 import co.akoot.plugins.yap.Yap
+import co.akoot.plugins.yap.api.ChatSource
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
@@ -23,7 +27,11 @@ class ChatListener(private val plugin: Yap) : Listener, ChatRenderer {
     fun onAsyncChat(event: AsyncChatEvent) {
         val sender = event.player
         val message = event.signedMessage().message()
-        event.message(message.parse())
+        val index = Yap.history.addMessage(ChatSource.MINECRAFT, sender.name, stripColor(message))
+        event.message(message.parse()
+            .clickEvent(suggest("/re $index "))
+            .hover("Reply")
+        )
         for (viewer in event.viewers()) {
             val player = viewer as? Player ?: break
             if (player.profile.isIgnoring(sender)) {
