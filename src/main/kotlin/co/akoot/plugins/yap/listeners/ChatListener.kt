@@ -8,58 +8,62 @@ import co.akoot.plugins.bluefox.util.getColor
 import co.akoot.plugins.bluefox.util.hover
 import co.akoot.plugins.bluefox.util.or
 import co.akoot.plugins.bluefox.util.parse
-import co.akoot.plugins.bluefox.util.stripColor
 import co.akoot.plugins.bluefox.util.suggest
 import co.akoot.plugins.yap.Yap
-import co.akoot.plugins.yap.api.ChatSource
 import io.papermc.paper.chat.ChatRenderer
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.player.PlayerAdvancementDoneEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-class ChatListener(private val plugin: Yap) : Listener, ChatRenderer {
+class ChatListener(private val plugin: Yap) : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onAsyncChat(event: AsyncChatEvent) {
         val sender = event.player
         val message = event.signedMessage().message()
-        val index = Yap.history.addMessage(ChatSource.MINECRAFT, sender.name, stripColor(message))
-        event.message(message.parse()
-            .clickEvent(suggest("/re $index "))
-            .hover("Reply")
-        )
+        val component = message.parse()
+
         for (viewer in event.viewers()) {
             val player = viewer as? Player ?: break
             if (player.profile.isIgnoring(sender)) {
                 event.viewers().remove(player)
             }
         }
-        event.renderer(this)
+
+        plugin.broadcast(component, event.viewers(), author = sender)
+        event.viewers().clear()
     }
 
-    override fun render(
-        source: Player,
-        sourceDisplayName: Component,
-        message: Component,
-        viewer: Audience
-    ): Component {
-        return if (viewer is Player) {
-            val tint = viewer.profile.globalChatTint or viewer.profile.chatTint or source.profile.chatTint
-            val tintIntensity =
-                viewer.profile.globalChatTintIntensity or viewer.profile.chatTintIntensity or source.profile.chatTintIntensity
-            val format = viewer.profile.globalChatFormat or viewer.profile.chatFormat or source.profile.chatFormat
-            viewer.profile.parseTheme(
-                format = format or plugin.defaultChatFormat,
-                tint = getColor(tint) ?: Color.Month,
-                tintIntensity = tintIntensity or 0.1,
-                profile = source.profile
-            ) + message
-        } else {
-            Component.text("[") + sourceDisplayName + "] " + message
-        }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerDeath(event: PlayerDeathEvent) {
+        event.deathMessage()?.let { plugin.broadcast(it) }
+        event.deathMessage(null)
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        event.joinMessage()?.let { plugin.broadcast(it) }
+        event.joinMessage(null)
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerQuit(event: PlayerQuitEvent) {
+        event.quitMessage()?.let { plugin.broadcast(it) }
+        event.quitMessage(null)
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlayerAdvancementDone(event: PlayerAdvancementDoneEvent) {
+        event.message()?.let { plugin.broadcast(it) }
+        event.message(null)
     }
 }

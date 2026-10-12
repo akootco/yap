@@ -2,8 +2,17 @@ package co.akoot.plugins.yap
 
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
+import co.akoot.plugins.bluefox.extensions.or
+import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.extensions.touch
+import co.akoot.plugins.bluefox.util.Color
+import co.akoot.plugins.bluefox.util.Text.Companion.plus
 import co.akoot.plugins.bluefox.util.async
+import co.akoot.plugins.bluefox.util.getColor
+import co.akoot.plugins.bluefox.util.hover
+import co.akoot.plugins.bluefox.util.or
+import co.akoot.plugins.bluefox.util.parse
+import co.akoot.plugins.bluefox.util.suggest
 import co.akoot.plugins.yap.api.ConsequentialTitle
 import co.akoot.plugins.yap.api.History
 import co.akoot.plugins.yap.api.RandomTitle
@@ -24,6 +33,9 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
 
 class Yap : FoxPlugin("yap") {
 
@@ -165,5 +177,57 @@ class Yap : FoxPlugin("yap") {
         registerCommand(NickCommand(this))
         registerCommand(TitleCommand)
         registerCommand(RegardingCommand)
+    }
+
+    fun broadcast(message: String, viewers: Collection<Audience> = server.onlinePlayers, discordMessage: String? = null, discordEmbed: MessageEmbed? = null, author: Player? = null) = broadcast(message.parse(), viewers)
+
+    fun broadcast(component: Component, viewers: Collection<Audience> = server.onlinePlayers, discordMessage: String? = null, discordEmbed: MessageEmbed? = null, author: Player? = null) {
+        val index = if(author != null) {
+            history.addMessage(author.profile.parseTheme(defaultChatFormat).append(component))
+        } else {
+            history.addMessage(component)
+        }
+        viewers.forEach {
+            val message = if(it is Player) {
+                if(author != null) {
+                    renderChatMessage(
+                        author,
+                        author.displayName(),
+                        component,
+                        it
+                    )
+                } else {
+                    it.profile.tint(component)
+                }
+            } else {
+                component
+            }
+
+            it.sendMessage(message.clickEvent(suggest("/re $index "))
+                .hover("Reply"))
+        }
+        //todo: discord stuff
+    }
+
+    fun renderChatMessage(
+        source: Player,
+        sourceDisplayName: Component,
+        message: Component,
+        viewer: Audience
+    ): Component {
+        return if (viewer is Player) {
+            val tint = viewer.profile.globalChatTint or viewer.profile.chatTint or source.profile.chatTint
+            val tintIntensity =
+                viewer.profile.globalChatTintIntensity or viewer.profile.chatTintIntensity or source.profile.chatTintIntensity
+            val format = viewer.profile.globalChatFormat or viewer.profile.chatFormat or source.profile.chatFormat
+            viewer.profile.parseTheme(
+                format = format or defaultChatFormat,
+                tint = getColor(tint) ?: Color.Month,
+                tintIntensity = tintIntensity or 0.1,
+                profile = source.profile
+            ) + message
+        } else {
+            Component.text("[") + sourceDisplayName + "] " + message
+        }
     }
 }
