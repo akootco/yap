@@ -52,26 +52,7 @@ class Yap : FoxPlugin("yap") {
 
         lateinit var history: History
 
-        var jda: JDA? = null
-        var guild: Guild? = null
-        val channels: MutableMap<String, TextChannel> = mutableMapOf()
         val linkTracker = LinkTracker()
-
-        fun sendDiscordMessage(message: String, channel: String = "minecraft") {
-            val channel = channels[channel] ?: return
-            channel.sendMessage(message).queue()
-        }
-
-        fun sendEmbed(embed: MessageEmbed, vararg other: MessageEmbed, channel: String = "minecraft") {
-            val channel = channels[channel] ?: return
-            channel.sendMessageEmbeds(embed, *other).queue()
-        }
-
-        fun embed(content: String, color: Int, iconUrl: String? = null) = EmbedBuilder().apply {
-            setColor(color)
-            setAuthor(content, null, iconUrl)
-        }.build()
-
     }
 
     val chatThemes = registerConfig("themes")
@@ -128,23 +109,6 @@ class Yap : FoxPlugin("yap") {
         return titles.filter { it is RandomTitle && it.rarity == rarity }.randomOrNull()
     }
 
-    private fun getJDA(): JDA? {
-        val token = auth.getString("discord.token")
-        if (token == null) {
-            logger.severe("Invalid Discord Token in auth.conf, Discord features disabled.")
-            return null
-        }
-        val builder = JDABuilder.createDefault(token)
-        builder.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MESSAGE_TYPING, GatewayIntent.MESSAGE_CONTENT)
-        return try {
-            builder.build()
-        } catch (e: Exception) {
-            logger.severe("Could not load JDA, Discord features disabled.")
-            e.printStackTrace()
-            null
-        }
-    }
-
     override fun registerConfigs() {
         auth = registerConfig("auth")
         Yap.titles = registerConfig("titles") { config ->
@@ -159,24 +123,11 @@ class Yap : FoxPlugin("yap") {
 
     override fun load() {
         instance = this
-        jda = getJDA()
-        async {
-            jda?.awaitReady()
-            guild = settings.getLong("discord.guildId")?.let { jda?.getGuildById(it) }
-            guild ?: logger.severe("Invalid Guild ID in settings.conf, Discord features disabled.")
-            guild?.textChannels?.forEach {
-                channels += it.name to it
-            }
-        }
-        jda?.addEventListener(DiscordListener(this))
+        BlueFox.jda?.addEventListener(DiscordListener(this))
         history = History(dataFolder.resolve("history.txt").touch())
-        logger.info("[JDA] Logged in as ${jda?.selfUser?.effectiveName}")
     }
 
     override fun unload() {
-        jda = null
-        guild = null
-        channels.clear()
     }
 
     override fun registerEvents() {

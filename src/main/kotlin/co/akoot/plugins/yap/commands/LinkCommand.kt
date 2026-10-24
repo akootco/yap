@@ -1,5 +1,6 @@
 package co.akoot.plugins.yap.commands
 
+import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.api.CatCommand
 import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.util.async
@@ -25,12 +26,12 @@ object LinkCommand: CatCommand(Yap.instance, "link", "Link your Discord account!
 
             val currentLink = player.profile.getDiscordId()
             if (currentLink != null) {
-                return@greedyString player.sendWarning("This Discord account is already linked! Use !unlink from Discord to unlink.")
+                return@greedyString player.sendWarning("This Discord account is already linked! Use ", quote("/unlink"), " from Discord to unlink.")
             }
 
             val username = it.string("discord username")
             if(username.length !in 2..32) return@greedyString player.sendWarning("Invalid username size... What are we doing man...")
-            val memberFuture = Yap.guild?.getMember(username) ?: return@greedyString player.sendWarning("This is so sad, I can't access Discord right now...")
+            val memberFuture = BlueFox.guild?.getMember(username) ?: return@greedyString player.sendWarning("This is so sad, I can't access Discord right now...")
             async {
                 val member = memberFuture.get()
                 if (member == null) {

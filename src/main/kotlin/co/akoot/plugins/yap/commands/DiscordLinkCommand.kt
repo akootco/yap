@@ -1,5 +1,6 @@
 package co.akoot.plugins.yap.commands
 
+import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.util.sync
 import co.akoot.plugins.yap.Yap
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
@@ -12,7 +13,7 @@ class DiscordLinkCommand(
 ) : ListenerAdapter() {
 
     fun register() {
-        Yap.guild?.upsertCommand(
+        BlueFox.guild?.upsertCommand(
             Commands.slash("link", "Link your Minecraft account!")
                 .addOption(
                     OptionType.STRING,
@@ -22,7 +23,7 @@ class DiscordLinkCommand(
                 )
         )?.queue()
 
-        Yap.jda?.addEventListener(this)
+        BlueFox.jda?.addEventListener(this)
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {

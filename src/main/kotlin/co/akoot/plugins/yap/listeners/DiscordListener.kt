@@ -76,14 +76,14 @@ class DiscordListener(val plugin: Yap) : ListenerAdapter() {
                         )
                     }
                 }
-                Yap.sendEmbed(embed, channel = "logs")
+                BlueFox.instance.sendEmbed(embed, channel = "logs")
             }
     }
 
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val authorId = event.author.idLong
         val message = event.message.contentDisplay
-        if(event.channel != Yap.channels["minecraft"]) return
+        if(event.channel != BlueFox.channels["minecraft"]) return
         val viewers = plugin.server.onlinePlayers.filterNot {
             it.profile.getDiscordId() == authorId || authorId in it.profile.ignoredDiscordUsers
         }
@@ -91,20 +91,20 @@ class DiscordListener(val plugin: Yap) : ListenerAdapter() {
     }
 
     override fun onReady(event: ReadyEvent) {
-       Yap.channels["minecraft"]?.sendMessageEmbeds(Yap.embed("Server Started!", 0xfbbf3a, "https://em-content.zobj.net/source/apple/453/sun_2600-fe0f.png"))
+       BlueFox.channels["minecraft"]?.sendMessageEmbeds(BlueFox.instance.embed("Server Started!", 0xfbbf3a, "https://em-content.zobj.net/source/apple/453/sun_2600-fe0f.png"))
     }
 
     override fun onSessionDisconnect(event: SessionDisconnectEvent) {
-        Yap.channels["minecraft"]?.sendMessageEmbeds(Yap.embed("Session Disconnected!", 0x0, "https://em-content.zobj.net/source/google/481/electric-plug_1f50c.png"))
+        BlueFox.channels["minecraft"]?.sendMessageEmbeds(BlueFox.instance.embed("Session Disconnected!", 0x0, "https://em-content.zobj.net/source/google/481/electric-plug_1f50c.png"))
     }
 
     override fun onChannelCreate(event: ChannelCreateEvent) {
         if (event.channelType != ChannelType.TEXT) return
-        Yap.channels += event.channel.name to event.channel.asTextChannel()
+        BlueFox.channels += event.channel.name to event.channel.asTextChannel()
     }
 
     override fun onChannelDelete(event: ChannelDeleteEvent) {
         if (event.channelType != ChannelType.TEXT) return
-        Yap.channels -= event.channel.name
+        BlueFox.channels -= event.channel.name
     }
 }
