@@ -1,0 +1,44 @@
+package co.akoot.plugins.yap.commands
+
+import co.akoot.plugins.bluefox.util.sync
+import co.akoot.plugins.yap.Yap
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import net.dv8tion.jda.api.interactions.commands.OptionType
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+
+class DiscordLinkCommand(
+    private val link: (discordId: Long, username: String) -> String
+) : ListenerAdapter() {
+
+    fun register() {
+        Yap.guild?.upsertCommand(
+            Commands.slash("link", "Link your Minecraft account!")
+                .addOption(
+                    OptionType.STRING,
+                    "username",
+                    "Your Minecraft username",
+                    true
+                )
+        )?.queue()
+
+        Yap.jda?.addEventListener(this)
+    }
+
+    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
+        if (event.name != "link") return
+
+        val username = event.getOption("username")!!.asString
+
+        event.deferReply(true).queue { hook ->
+            sync {
+                runCatching { link(event.user.idLong, username) }
+                    .onSuccess { hook.editOriginal(it).queue() }
+                    .onFailure {
+                        it.printStackTrace()
+                        hook.editOriginal("Couldn't link your account. Please try again.").queue()
+                    }
+            }
+        }
+    }
+}

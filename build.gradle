@@ -5,7 +5,7 @@ dependencies {
     compileOnly project(":bluefox")
 
     // Discord4J but without opus-java and also use the latest version of okhttp3 pls ty
-    implementation('net.dv8tion:JDA:6.0.0') {
+    implementation('net.dv8tion:JDA:6.7.0') {
         exclude module: 'opus-java'
     }
 }

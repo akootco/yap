@@ -1,5 +1,6 @@
 package co.akoot.plugins.yap
 
+import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.api.FoxConfig
 import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.extensions.or
@@ -15,18 +16,22 @@ import co.akoot.plugins.bluefox.util.parse
 import co.akoot.plugins.bluefox.util.suggest
 import co.akoot.plugins.yap.api.ConsequentialTitle
 import co.akoot.plugins.yap.api.History
+import co.akoot.plugins.yap.api.LinkTracker
 import co.akoot.plugins.yap.api.RandomTitle
 import co.akoot.plugins.yap.api.TimedTitle
 import co.akoot.plugins.yap.api.Title
 import co.akoot.plugins.yap.api.TitleRarity
 import co.akoot.plugins.yap.api.TitleType
+import co.akoot.plugins.yap.commands.DiscordLinkCommand
 import co.akoot.plugins.yap.commands.ChatThemeCommand
+import co.akoot.plugins.yap.commands.LinkCommand
 import co.akoot.plugins.yap.commands.NickCommand
 import co.akoot.plugins.yap.commands.PrintCommand
 import co.akoot.plugins.yap.commands.RegardingCommand
 import co.akoot.plugins.yap.commands.TitleCommand
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
+import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.entities.Guild
@@ -50,6 +55,7 @@ class Yap : FoxPlugin("yap") {
         var jda: JDA? = null
         var guild: Guild? = null
         val channels: MutableMap<String, TextChannel> = mutableMapOf()
+        val linkTracker = LinkTracker()
 
         fun sendDiscordMessage(message: String, channel: String = "minecraft") {
             val channel = channels[channel] ?: return
@@ -60,6 +66,11 @@ class Yap : FoxPlugin("yap") {
             val channel = channels[channel] ?: return
             channel.sendMessageEmbeds(embed, *other).queue()
         }
+
+        fun embed(content: String, color: Int, iconUrl: String? = null) = EmbedBuilder().apply {
+            setColor(color)
+            setAuthor(content, null, iconUrl)
+        }.build()
 
     }
 
@@ -124,7 +135,7 @@ class Yap : FoxPlugin("yap") {
             return null
         }
         val builder = JDABuilder.createDefault(token)
-        builder.enableIntents(GatewayIntent.GUILD_MEMBERS)
+        builder.enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_MESSAGE_TYPING, GatewayIntent.MESSAGE_CONTENT)
         return try {
             builder.build()
         } catch (e: Exception) {
@@ -157,8 +168,9 @@ class Yap : FoxPlugin("yap") {
                 channels += it.name to it
             }
         }
-        jda?.addEventListener(DiscordListener())
+        jda?.addEventListener(DiscordListener(this))
         history = History(dataFolder.resolve("history.txt").touch())
+        logger.info("[JDA] Logged in as ${jda?.selfUser?.effectiveName}")
     }
 
     override fun unload() {
@@ -177,6 +189,19 @@ class Yap : FoxPlugin("yap") {
         registerCommand(NickCommand(this))
         registerCommand(TitleCommand)
         registerCommand(RegardingCommand)
+        registerCommand(LinkCommand)
+        DiscordLinkCommand { discordId, username ->
+            val player = BlueFox.getOfflinePlayer(username) ?: return@DiscordLinkCommand "Player not found!"
+            val result = linkTracker.confirm(player.uniqueId, discordId, LinkTracker.Platform.DISCORD)
+            when (result) {
+                LinkTracker.Result.WAITING ->
+                    "Now run /link ${player.name} on Minecraft to finish linking!"
+
+                LinkTracker.Result.LINKED ->
+                    "Your Minecraft and Discord accounts are now linked!"
+            }
+        }.register()
+
     }
 
     fun broadcast(message: String, viewers: Collection<Audience> = server.onlinePlayers, discordMessage: String? = null, discordEmbed: MessageEmbed? = null, author: Player? = null) = broadcast(message.parse(), viewers)

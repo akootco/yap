@@ -3,7 +3,6 @@ package co.akoot.plugins.yap.commands
 import co.akoot.plugins.bluefox.api.CatCommand
 import co.akoot.plugins.bluefox.util.Color
 import co.akoot.plugins.bluefox.util.italic
-import co.akoot.plugins.bluefox.util.parse
 import co.akoot.plugins.bluefox.util.sendWarning
 import co.akoot.plugins.bluefox.util.tint
 import co.akoot.plugins.yap.Yap
