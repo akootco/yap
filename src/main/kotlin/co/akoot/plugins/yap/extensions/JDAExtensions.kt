@@ -36,11 +36,27 @@ fun Guild.getMember(username: String): CompletableFuture<Member?> {
         return future
     }
 
-    retrieveMembersByPrefix(name, 100)
+    return getMember(name) {
+        it.user.name.equals(name, ignoreCase = true)
+    }
+}
+
+fun Guild.getMember(id: Long): CompletableFuture<Member?> {
+    val future = CompletableFuture<Member?>()
+
+    retrieveMemberById(id).onSuccess {
+        future.complete(it)
+    }
+
+    return future
+}
+
+fun Guild.getMember(prefix: String, predicate: (Member) -> Boolean): CompletableFuture<Member?> {
+    val future = CompletableFuture<Member?>()
+
+    retrieveMembersByPrefix(prefix, 100)
         .onSuccess { members ->
-            val match = members.firstOrNull {
-                it.user.name.equals(name, ignoreCase = true)
-            }
+            val match = members.firstOrNull(predicate)
 
             when {
                 match != null -> future.complete(match)

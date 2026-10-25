@@ -2,13 +2,15 @@ package co.akoot.plugins.yap.commands
 
 import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.util.sync
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 
 class DiscordLinkCommand(
-    private val link: (discordId: Long, username: String) -> String
+    private val link: (member: User, username: String) -> String
 ) : ListenerAdapter() {
 
     fun register() {
@@ -32,7 +34,7 @@ class DiscordLinkCommand(
 
         event.deferReply(true).queue { hook ->
             sync {
-                runCatching { link(event.user.idLong, username) }
+                runCatching { link(event.user, username) }
                     .onSuccess { hook.editOriginal(it).queue() }
                     .onFailure {
                         it.printStackTrace()

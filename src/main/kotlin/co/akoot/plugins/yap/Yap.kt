@@ -10,6 +10,8 @@ import co.akoot.plugins.bluefox.util.*
 import co.akoot.plugins.bluefox.util.Text.Companion.plus
 import co.akoot.plugins.yap.api.*
 import co.akoot.plugins.yap.commands.*
+import co.akoot.plugins.yap.extensions.getMember
+import co.akoot.plugins.yap.extensions.username
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
 import net.dv8tion.jda.api.entities.MessageEmbed
@@ -119,16 +121,22 @@ class Yap : FoxPlugin("yap") {
         registerCommand(TitleCommand)
         registerCommand(RegardingCommand)
         registerCommand(LinkCommand)
-        DiscordLinkCommand { discordId, username ->
+        DiscordLinkCommand { user, username ->
             val player = BlueFox.getOfflinePlayer(username) ?: return@DiscordLinkCommand "Player not found!"
-            val result = linkTracker.confirm(player.uniqueId, discordId, LinkTracker.Platform.DISCORD)
+            val result = linkTracker.confirm(player.uniqueId, user.idLong, LinkTracker.Platform.DISCORD)
             when (result) {
                 LinkTracker.Result.WAITING ->
-                    "Now run /link ${player.name} on Minecraft to finish linking!"
+                    "Now run `/link ${user.username}` in **Minecraft** to finish linking!"
 
                 LinkTracker.Result.LINKED ->
-                    "Your Minecraft and Discord accounts are now linked!"
+                    "Your **Minecraft** and **Discord** accounts are now linked! :tada:"
             }
+        }.register()
+        registerCommand(UnlinkCommand)
+        DiscordUnlinkCommand { discordId ->
+            val player = BlueFox.getLinkedPlayer(discordId) ?: return@DiscordUnlinkCommand "Player not linked!"
+            player.profile.unlinkDiscordId()
+            "Your Minecraft and Discord accounts are no longer linked!"
         }.register()
 
     }
