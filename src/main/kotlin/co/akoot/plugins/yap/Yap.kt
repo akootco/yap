@@ -6,38 +6,13 @@ import co.akoot.plugins.bluefox.api.FoxPlugin
 import co.akoot.plugins.bluefox.extensions.or
 import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.extensions.touch
-import co.akoot.plugins.bluefox.util.Color
+import co.akoot.plugins.bluefox.util.*
 import co.akoot.plugins.bluefox.util.Text.Companion.plus
-import co.akoot.plugins.bluefox.util.async
-import co.akoot.plugins.bluefox.util.getColor
-import co.akoot.plugins.bluefox.util.hover
-import co.akoot.plugins.bluefox.util.or
-import co.akoot.plugins.bluefox.util.parse
-import co.akoot.plugins.bluefox.util.suggest
-import co.akoot.plugins.yap.api.ConsequentialTitle
-import co.akoot.plugins.yap.api.History
-import co.akoot.plugins.yap.api.LinkTracker
-import co.akoot.plugins.yap.api.RandomTitle
-import co.akoot.plugins.yap.api.TimedTitle
-import co.akoot.plugins.yap.api.Title
-import co.akoot.plugins.yap.api.TitleRarity
-import co.akoot.plugins.yap.api.TitleType
-import co.akoot.plugins.yap.commands.DiscordLinkCommand
-import co.akoot.plugins.yap.commands.ChatThemeCommand
-import co.akoot.plugins.yap.commands.LinkCommand
-import co.akoot.plugins.yap.commands.NickCommand
-import co.akoot.plugins.yap.commands.PrintCommand
-import co.akoot.plugins.yap.commands.RegardingCommand
-import co.akoot.plugins.yap.commands.TitleCommand
+import co.akoot.plugins.yap.api.*
+import co.akoot.plugins.yap.commands.*
 import co.akoot.plugins.yap.listeners.ChatListener
 import co.akoot.plugins.yap.listeners.DiscordListener
-import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
-import net.dv8tion.jda.api.requests.GatewayIntent
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
@@ -68,19 +43,22 @@ class Yap : FoxPlugin("yap") {
                 val titleName = getString("$key.name") ?: continue
                 val discordId = getLong("$key.discord") ?: 0
                 val alt = getString("$key.alt")
-                val title = when(type) {
+                val title = when (type) {
                     TitleType.CONSEQUENTIAL -> {
                         ConsequentialTitle(titleId, titleName, discordId, getString("$key.reason") ?: "Unknown", alt)
                     }
+
                     TitleType.TIMED -> {
                         val playtime = getInt("$key.playtime") ?: continue
                         val days = getInt("$key.days") ?: continue
                         TimedTitle(titleId, titleName, discordId, playtime, days, alt)
                     }
+
                     TitleType.RANDOM -> {
                         val rarity = getEnum<TitleRarity>("$key.rarity") ?: continue
                         RandomTitle(titleId, titleName, discordId, rarity, alt)
                     }
+
                     else -> Title(titleId, titleName, discordId, alt)
                 }
                 titles.add(title)
@@ -102,9 +80,9 @@ class Yap : FoxPlugin("yap") {
     fun randomTitle(luck: Double = 0.0): Title? {
         val roll = Math.random() - luck.coerceIn(0.0, 1.0)
         val rarity =
-            if(roll <= 0.05) TitleRarity.LEGENDARY
-            else if(roll <= 0.10) TitleRarity.RARE
-            else if(roll <= 0.25) TitleRarity.UNCOMMON
+            if (roll <= 0.05) TitleRarity.LEGENDARY
+            else if (roll <= 0.10) TitleRarity.RARE
+            else if (roll <= 0.25) TitleRarity.UNCOMMON
             else TitleRarity.COMMON
         return titles.filter { it is RandomTitle && it.rarity == rarity }.randomOrNull()
     }
@@ -155,17 +133,29 @@ class Yap : FoxPlugin("yap") {
 
     }
 
-    fun broadcast(message: String, viewers: Collection<Audience> = server.onlinePlayers, discordMessage: String? = null, discordEmbed: MessageEmbed? = null, author: Player? = null) = broadcast(message.parse(), viewers)
+    fun broadcast(
+        message: String,
+        viewers: Collection<Audience> = server.onlinePlayers,
+        discordMessage: String? = null,
+        discordEmbed: MessageEmbed? = null,
+        author: Player? = null
+    ) = broadcast(message.parse(), viewers)
 
-    fun broadcast(component: Component, viewers: Collection<Audience> = server.onlinePlayers, discordMessage: String? = null, discordEmbed: MessageEmbed? = null, author: Player? = null) {
-        val index = if(author != null) {
+    fun broadcast(
+        component: Component,
+        viewers: Collection<Audience> = server.onlinePlayers,
+        discordMessage: String? = null,
+        discordEmbed: MessageEmbed? = null,
+        author: Player? = null
+    ) {
+        val index = if (author != null) {
             history.addMessage(author.profile.parseTheme(defaultChatFormat).append(component))
         } else {
             history.addMessage(component)
         }
         viewers.forEach {
-            val message = if(it is Player) {
-                if(author != null) {
+            val message = if (it is Player) {
+                if (author != null) {
                     renderChatMessage(
                         author,
                         author.displayName(),
@@ -179,8 +169,10 @@ class Yap : FoxPlugin("yap") {
                 component
             }
 
-            it.sendMessage(message.clickEvent(suggest("/re $index "))
-                .hover("Reply"))
+            it.sendMessage(
+                message.clickEvent(suggest("/re $index "))
+                    .hover("Reply")
+            )
         }
         //todo: discord stuff
     }

@@ -2,7 +2,6 @@ package co.akoot.plugins.yap.commands
 
 import co.akoot.plugins.bluefox.BlueFox
 import co.akoot.plugins.bluefox.util.sync
-import co.akoot.plugins.yap.Yap
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.OptionType

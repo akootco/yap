@@ -7,7 +7,6 @@ import co.akoot.plugins.yap.Yap
 import co.akoot.plugins.yap.extensions.asEmbed
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.audit.ActionType
-import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent
@@ -83,7 +82,7 @@ class DiscordListener(val plugin: Yap) : ListenerAdapter() {
     override fun onMessageReceived(event: MessageReceivedEvent) {
         val authorId = event.author.idLong
         val message = event.message.contentDisplay
-        if(event.channel != BlueFox.channels["minecraft"]) return
+        if (event.channel != BlueFox.channels["minecraft"]) return
         val viewers = plugin.server.onlinePlayers.filterNot {
             it.profile.getDiscordId() == authorId || authorId in it.profile.ignoredDiscordUsers
         }
@@ -91,11 +90,23 @@ class DiscordListener(val plugin: Yap) : ListenerAdapter() {
     }
 
     override fun onReady(event: ReadyEvent) {
-       BlueFox.channels["minecraft"]?.sendMessageEmbeds(BlueFox.instance.embed("Server Started!", 0xfbbf3a, "https://em-content.zobj.net/source/apple/453/sun_2600-fe0f.png"))
+        BlueFox.channels["minecraft"]?.sendMessageEmbeds(
+            BlueFox.instance.embed(
+                "Server Started!",
+                0xfbbf3a,
+                "https://em-content.zobj.net/source/apple/453/sun_2600-fe0f.png"
+            )
+        )
     }
 
     override fun onSessionDisconnect(event: SessionDisconnectEvent) {
-        BlueFox.channels["minecraft"]?.sendMessageEmbeds(BlueFox.instance.embed("Session Disconnected!", 0x0, "https://em-content.zobj.net/source/google/481/electric-plug_1f50c.png"))
+        BlueFox.channels["minecraft"]?.sendMessageEmbeds(
+            BlueFox.instance.embed(
+                "Session Disconnected!",
+                0x0,
+                "https://em-content.zobj.net/source/google/481/electric-plug_1f50c.png"
+            )
+        )
     }
 
     override fun onChannelCreate(event: ChannelCreateEvent) {

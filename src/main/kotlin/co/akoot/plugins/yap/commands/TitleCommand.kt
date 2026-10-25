@@ -5,14 +5,7 @@ import co.akoot.plugins.bluefox.api.Profile
 import co.akoot.plugins.bluefox.extensions.profile
 import co.akoot.plugins.bluefox.extensions.username
 import co.akoot.plugins.bluefox.extensions.usernamePossessive
-import co.akoot.plugins.bluefox.util.colorCodes
-import co.akoot.plugins.bluefox.util.colors
-import co.akoot.plugins.bluefox.util.parse
-import co.akoot.plugins.bluefox.util.plus
-import co.akoot.plugins.bluefox.util.primary
-import co.akoot.plugins.bluefox.util.quote
-import co.akoot.plugins.bluefox.util.sendText
-import co.akoot.plugins.bluefox.util.sendWarning
+import co.akoot.plugins.bluefox.util.*
 import co.akoot.plugins.yap.Yap
 import co.akoot.plugins.yap.api.Title
 import com.mojang.brigadier.context.CommandContext
@@ -27,37 +20,43 @@ private val titleStyles: List<String> get() = Profile.TitleStyle.entries.map { i
 private val titles: List<String> get() = Yap.instance.titles.map { it.id }
 private val colors: Set<String> get() = colorCodes.keys
 
-object TitleCommand: CatCommand(Yap.instance, "title", "Set your title!", onCommand = {
+object TitleCommand : CatCommand(Yap.instance, "title", "Set your title!", onCommand = {
 
-    val titleStyleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { _, builder ->
-        suggest(builder, titleStyles)
-    }
-
-    val titleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { _, builder ->
-        suggest(builder, titles)
-    }
-
-    val unlockedTitleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { ctx, builder ->
-        ctx.playerSender?.let {
-            suggest(builder, it.profile.unlockedTitles)
+    val titleStyleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { _, builder ->
+            suggest(builder, titleStyles)
         }
-    }
 
-    fun unlockedTitleSuggestions(playerArg: String = "player"): (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { ctx, builder ->
-        ctx.offlinePlayer(playerArg)?.let {
-            suggest(builder, it.profile.unlockedTitles)
+    val titleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { _, builder ->
+            suggest(builder, titles)
         }
-    }
 
-    val colorSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { _, builder ->
-        suggest(builder, colors)
-    }
-
-    val unlockedColorSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit = { ctx, builder ->
-        ctx.playerSender?.let {
-            suggest(builder, it.profile.unlockedColors)
+    val unlockedTitleSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { ctx, builder ->
+            ctx.playerSender?.let {
+                suggest(builder, it.profile.unlockedTitles)
+            }
         }
-    }
+
+    fun unlockedTitleSuggestions(playerArg: String = "player"): (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { ctx, builder ->
+            ctx.offlinePlayer(playerArg)?.let {
+                suggest(builder, it.profile.unlockedTitles)
+            }
+        }
+
+    val colorSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { _, builder ->
+            suggest(builder, colors)
+        }
+
+    val unlockedColorSuggestions: (ctx: CommandContext<CommandSourceStack>, builder: SuggestionsBuilder) -> Unit =
+        { ctx, builder ->
+            ctx.playerSender?.let {
+                suggest(builder, it.profile.unlockedColors)
+            }
+        }
 
     fun CommandSender.getColors(string: String): List<TextColor> {
         val colors = string.colors()
@@ -73,13 +72,13 @@ object TitleCommand: CatCommand(Yap.instance, "title", "Set your title!", onComm
 
     fun CommandSender.getTitle(id: String): Title? {
         val title = (plugin as Yap).getTitle(id)
-        if(title == null) sendWarning("Title \"", primary(id), "\" does not exist!")
+        if (title == null) sendWarning("Title \"", primary(id), "\" does not exist!")
         return title
     }
 
     fun CommandSender.getTitleStyle(style: String): Profile.TitleStyle? {
         val titleStyle = runCatching { Profile.TitleStyle.valueOf(style) }.getOrNull()
-        if(titleStyle == null) {
+        if (titleStyle == null) {
             sendWarning("That is not a valid title style! Pick from the following:")
             sendWarning(quote(titleStyles.joinToString(", ")))
         }
@@ -94,18 +93,18 @@ object TitleCommand: CatCommand(Yap.instance, "title", "Set your title!", onComm
     fun CommandSender.giveTitle(player: OfflinePlayer, title: String): Boolean {
         val title = getTitle(title) ?: return false
         player.profile.giveTitle(title.id)
-        return sendText("Gave ", player, " the ", title.name.parse(),  " title!")
+        return sendText("Gave ", player, " the ", title.name.parse(), " title!")
     }
 
     fun Player.select(title: String): Boolean {
         val title = getTitle(title) ?: return false
-        if(profile.hasTitle(title.id)) return sendWarning("You do not have that title unlocked!")
+        if (profile.hasTitle(title.id)) return sendWarning("You do not have that title unlocked!")
         profile.title = title.id
         return sendText("Set title to ", title.name.parse(), "!")
     }
 
     fun CommandSender.setTitle(player: OfflinePlayer, title: String): Boolean {
-        if(this == player) {
+        if (this == player) {
             player.player?.select(title)?.let { return it }
         }
         val title = getTitle(title) ?: return false
@@ -116,7 +115,7 @@ object TitleCommand: CatCommand(Yap.instance, "title", "Set your title!", onComm
 
     fun Player.sendTitle(player: OfflinePlayer, title: String): Boolean {
         val title = getTitle(title) ?: return false
-        if(!profile.hasTitle(title.id)) return sendWarning("You do not have that title unlocked!")
+        if (!profile.hasTitle(title.id)) return sendWarning("You do not have that title unlocked!")
         profile.removeTitle(title.id)
         player.profile.giveTitle(title.id)
         return sendText("Sent title ", title, " to ", primary(player.username), "!")

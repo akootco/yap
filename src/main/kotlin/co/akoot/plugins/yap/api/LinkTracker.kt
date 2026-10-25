@@ -3,7 +3,7 @@ package co.akoot.plugins.yap.api
 import co.akoot.plugins.bluefox.extensions.profile
 import org.bukkit.Bukkit
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 
 class LinkTracker(
     private val timeout: Duration = Duration.ofMinutes(10)
